@@ -27,94 +27,6 @@ class Slack extends NotificationProvider {
     }
 
     /**
-     * Builds the actions available in the slack message
-     * @param {string} baseURL Uptime Kuma base URL
-     * @param {object} monitorJSON The monitor config
-     * @returns {Array} The relevant action objects
-     */
-    static buildActions(baseURL, monitorJSON) {
-        const actions = [];
-
-        if (baseURL) {
-            actions.push({
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Visit Uptime Kuma",
-                },
-                "value": "Uptime-Kuma",
-                "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-            });
-
-        }
-
-        const address = this.extractAdress(monitorJSON);
-        if (address) {
-            actions.push({
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Visit site",
-                },
-                "value": "Site",
-                "url": address,
-            });
-        }
-
-        return actions;
-    }
-
-    /**
-     * Builds the different blocks the Slack message consists of.
-     * @param {string} baseURL Uptime Kuma base URL
-     * @param {object} monitorJSON The monitor object
-     * @param {object} heartbeatJSON The heartbeat object
-     * @param {string} title The message title
-     * @param {string} msg The message body
-     * @returns {Array<object>} The rich content blocks for the Slack message
-     */
-    static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
-
-        //create an array to dynamically add blocks
-        const blocks = [];
-
-        // the header block
-        blocks.push({
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": title,
-            },
-        });
-
-        // the body block, containing the details
-        blocks.push({
-            "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Message*\n" + msg,
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                }
-            ],
-        });
-
-        const actions = this.buildActions(baseURL, monitorJSON);
-        if (actions.length > 0) {
-            //the actions block, containing buttons
-            blocks.push({
-                "type": "actions",
-                "elements": actions,
-            });
-        }
-
-        return blocks;
-    }
-
-    /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -138,18 +50,14 @@ class Slack extends NotificationProvider {
 
             const baseURL = await setting("primaryBaseURL");
 
-            const title = "Uptime Kuma Alert";
+            const title = "Uptime Kuma Alert-test";
+            const combinedMessage = `${msg}`;
+
             let data = {
-                "text": `${title}\n${msg}`,
+                "text": combinedMessage,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
-                "attachments": [
-                    {
-                        "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
-                    }
-                ]
             };
 
             if (notification.slackbutton) {
