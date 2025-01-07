@@ -34,7 +34,7 @@ class Feishu extends NotificationProvider {
                         header: {
                             title: {
                                 tag: "plain_text",
-                                content: "UptimeKuma Alert: [Down] " + monitorJSON["name"],
+                                content: "Alert: [Down] " + heartbeatJSON["msg"],
                             },
                             template: "red",
                         },
@@ -43,7 +43,7 @@ class Feishu extends NotificationProvider {
                                 tag: "div",
                                 text: {
                                     tag: "lark_md",
-                                    content: getContent(heartbeatJSON),
+                                    content: getContent(heartbeatJSON, monitorJSON), // 修改这里以传递 monitorJSON
                                 },
                             }
                         ]
@@ -64,7 +64,7 @@ class Feishu extends NotificationProvider {
                         header: {
                             title: {
                                 tag: "plain_text",
-                                content: "UptimeKuma Alert: [UP] " + monitorJSON["name"],
+                                content: "Alert: [Up]" + heartbeatJSON["msg"],
                             },
                             template: "green",
                         },
@@ -73,7 +73,7 @@ class Feishu extends NotificationProvider {
                                 tag: "div",
                                 text: {
                                     tag: "lark_md",
-                                    content: getContent(heartbeatJSON),
+                                    content: getContent(heartbeatJSON, monitorJSON), // 修改这里以传递 monitorJSON
                                 },
                             },
                         ]
@@ -91,12 +91,12 @@ class Feishu extends NotificationProvider {
 /**
  * Get content
  * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
+ * @param {?object} monitorJSON Monitor details
  * @returns {string} Return Successful Message
  */
-function getContent(heartbeatJSON) {
+function getContent(heartbeatJSON, monitorJSON) {
     return [
-        "**Message**: " + heartbeatJSON["msg"],
-        "**Ping**: " + (heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms"),
+        "**Message**: " + monitorJSON["name"],
         `**Time (${heartbeatJSON["timezone"]})**: ${heartbeatJSON["localDateTime"]}`
     ].join("\n");
 }
