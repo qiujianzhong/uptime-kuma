@@ -13,6 +13,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
+const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
@@ -30,9 +31,11 @@ const Mattermost = require("./notification-providers/mattermost");
 const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
+const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
@@ -72,6 +75,8 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
+const SMSPlanet = require("./notification-providers/sms-planet");
+const SpugPush = require("./notification-providers/spugpush");
 
 class Notification {
 
@@ -119,6 +124,7 @@ class Notification {
             new Nostr(),
             new Ntfy(),
             new Octopush(),
+            new OneChat(),
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
@@ -126,6 +132,7 @@ class Notification {
             new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
+            new Pumble(),
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
@@ -160,7 +167,10 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
-            new YZJ()
+            new YZJ(),
+            new SMSPlanet(),
+            new SpugPush(),
+            new Notifery(),
         ];
         for (let item of list) {
             if (! item.name) {
@@ -202,10 +212,7 @@ class Notification {
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-                notificationID,
-                userID,
-            ]);
+            bean = await R.findOne("notification", " id = ? ", [ notificationID ]);
 
             if (! bean) {
                 throw new Error("notification not found");
@@ -231,14 +238,10 @@ class Notification {
     /**
      * Delete a notification
      * @param {number} notificationID ID of notification to delete
-     * @param {number} userID ID of user who created notification
      * @returns {Promise<void>}
      */
-    static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-            notificationID,
-            userID,
-        ]);
+    static async delete(notificationID) {
+        let bean = await R.findOne("notification", " id = ? ", [ notificationID ]);
 
         if (! bean) {
             throw new Error("notification not found");
@@ -262,13 +265,10 @@ class Notification {
 /**
  * Apply the notification to every monitor
  * @param {number} notificationID ID of notification to apply
- * @param {number} userID ID of user who created notification
  * @returns {Promise<void>}
  */
-async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
-    ]);
+async function applyNotificationEveryMonitor(notificationID) {
+    let monitors = await R.getAll("SELECT id FROM monitor");
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
